@@ -30,15 +30,26 @@ def getWords():
 		wordlist[index] = item.strip('\n')
 	return wordlist
 
-def createPass(minLen, maxLen, minWord, maxWord, numSub, alternate):
+def getNewWord():
 	wordlist = getWords()
 	word = ""
-	word += random.choice(wordlist)
+	for i in range(4):
+		word += random.choice(wordlist)
+	return word
+
+def createPass(minLen, maxLen, minWord, maxWord, numSub, alternate):
+	word = getNewWord()
+	if len(word) >= minLen and len(word) <= maxLen:
+		print(len(word))
+		return word
+	else:
+		getNewWord()
 
 	return word
 	# count how long each word is, make sure totalLen <= maxLen and totalLen >= minLen
 	# make sure to use between specified number of words
 	# concatenate this all together to generate a password
+
 
 	#then do number replacement and alternate handss
 
