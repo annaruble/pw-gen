@@ -16,7 +16,7 @@ def collect():
 	numSub = bool(request.args.get('numSub'))
 	alternate = bool(request.args.get('alternate'))
 
-	password = createPass(minLen, maxLen, minWord, maxWord, numSub, alternate)
+	password = createPass(minLen, maxLen, minWord, maxWord, numSub)
 
 	return render_template('passwords.html', password=password)
 
@@ -25,33 +25,49 @@ def collect():
 def getWords():
 	wordfile = open('words.dat', 'r')
 	wordlist = wordfile.readlines()
+
 	for item in wordlist:
 		index = wordlist.index(item)
 		wordlist[index] = item.strip('\n')
-	return wordlist
 
-def getNewWord():
-	wordlist = getWords()
-	word = ""
-	for i in range(4):
-		word += random.choice(wordlist)
-	return word
+	lenDict = {}
+	for word in wordlist:
+		lenDict.setdefault(len(word), []).append(word)
 
-def createPass(minLen, maxLen, minWord, maxWord, numSub, alternate):
-	word = getNewWord()
-	if len(word) >= minLen and len(word) <= maxLen:
-		print(len(word))
-		return word
+	return lenDict
+
+def createPass(minLen, maxLen, minWord, maxWord, numSub):
+	lenDict = getWords()
+
+	minWordList = lenDict[minWord]
+	midWordList = lenDict[minWord+1]
+	maxWordList = lenDict[maxWord]
+
+	longword = ""
+	longword += random.choice(minWordList)
+	longword += random.choice(maxWordList)
+	longword += random.choice(midWordList)
+	longword += random.choice(minWordList)
+
+	if numSub is True:
+		password = numberSubstitution(longword)
+	else: 
+		password=longword
+
+	if len(password) > maxLen:
+		return("Refresh the page to get a password more suited to your requirements.")
 	else:
-		getNewWord()
+		return password
 
-	return word
-	# count how long each word is, make sure totalLen <= maxLen and totalLen >= minLen
-	# make sure to use between specified number of words
-	# concatenate this all together to generate a password
-
-
-	#then do number replacement and alternate handss
+def numberSubstitution(password):
+	switch = {'e':'3', 'i':'1', 'a':'4', 'b':'8', 'q':'9', 'o':'0'}
+	print(password)
+	newpass = ""
+	for ch in password:
+		if ch in switch.keys():
+			ch = ch.replace(ch, switch[ch])
+		newpass += ch
+	return newpass
 
 
 if __name__ == '__main__':
