@@ -16,9 +16,11 @@ def collect():
 	numSub = bool(request.args.get('numSub'))
 	sentence = bool(request.args.get('sentence'))
 
-	password = createPass(minLen, maxLen, minWord, maxWord, numSub, sentence)
+	password1 = createPass(minLen, maxLen, minWord, maxWord, numSub, sentence)
+	password2 = createPass(minLen, maxLen, minWord, maxWord, numSub, sentence)	
+	password3 = createPass(minLen, maxLen, minWord, maxWord, numSub, sentence)
 
-	return render_template('passwords.html', password=password)
+	return render_template('passwords.html', password1=password1, password2=password2, password3=password3)
 
 # #################################################
 
