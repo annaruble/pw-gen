@@ -14,9 +14,9 @@ def collect():
 	minWord = int(request.args.get('minWord'))
 	maxWord = int(request.args.get('maxWord'))
 	numSub = bool(request.args.get('numSub'))
-	alternate = bool(request.args.get('alternate'))
+	sentence = bool(request.args.get('sentence'))
 
-	password = createPass(minLen, maxLen, minWord, maxWord, numSub)
+	password = createPass(minLen, maxLen, minWord, maxWord, numSub, sentence)
 
 	return render_template('passwords.html', password=password)
 
@@ -36,26 +36,89 @@ def getWords():
 
 	return lenDict
 
-def createPass(minLen, maxLen, minWord, maxWord, numSub):
-	lenDict = getWords()
+def getAdj():
+	adjFile = open('adjectives.txt', 'r')
+	adjList = adjFile.readlines()
+	
+	for item in adjList:
+		index = adjList.index(item)
+		adjList[index] = item.strip('\n')	
+	
+	adjDict = {}
+	for word in adjList:
+		adjDict.setdefault(len(word), []).append(word)
+	return adjDict
+	
+def getNoun():
+	nounFile = open('nouns.txt', 'r')
+	nounList = nounFile.readlines()
+	
+	for item in nounList:
+		index = nounList.index(item)
+		nounList[index] = item.strip('\n')	
+	
+	nounDict = {}
+	for word in nounList:
+		nounDict.setdefault(len(word), []).append(word)	
+	return nounDict
+	
+def getVerb():	
+	verbFile = open('verbs.txt', 'r')
+	verbList = verbFile.readlines()
+	
+	for item in verbList:
+		index = verbList.index(item)
+		verbList[index] = item.strip('\n')	
+	
+	verbDict = {}
+	for word in verbList:
+		verbDict.setdefault(len(word), []).append(word)
+	return verbDict
 
-	minWordList = lenDict[minWord]
-	midWordList = lenDict[minWord+1]
-	maxWordList = lenDict[maxWord]
+def getAdverb():	
+	adverbFile = open('adverbs.txt', 'r')
+	adverbList = adverbFile.readlines()
+	
+	for item in adverbList:
+		index = adverbList.index(item)
+		adverbList[index] = item.strip('\n')	
+	
+	adverbDict = {}
+	for word in adverbList:
+		adverbDict.setdefault(len(word), []).append(word)
+	return adverbDict
 
-	longword = ""
-	longword += random.choice(minWordList)
-	longword += random.choice(maxWordList)
-	longword += random.choice(midWordList)
-	longword += random.choice(minWordList)
+def createPass(minLen, maxLen, minWord, maxWord, numSub, sentence):
+	password = ""
+
+	if sentence is True:
+		adjDict = getAdj()
+		nounDict = getNoun()
+		verbDict = getVerb()
+		adverbDict = getAdverb()
+		
+		password += random.choice(adjDict[minWord+1])
+		password += random.choice(nounDict[minWord])
+		password += random.choice(verbDict[minWord+1])
+		password += random.choice(adverbDict[maxWord])
+
+	else:
+		lenDict = getWords()
+		
+		minWordList = lenDict[minWord]
+		midWordList = lenDict[minWord+1]
+		maxWordList = lenDict[maxWord]
+		
+		password += random.choice(minWordList)
+		password += random.choice(maxWordList)
+		password += random.choice(midWordList)
+		password += random.choice(minWordList)
 
 	if numSub is True:
-		password = numberSubstitution(longword)
-	else: 
-		password=longword
+		password = numberSubstitution(password)
 
-	if len(password) > maxLen:
-		return("Refresh the page to get a password more suited to your requirements.")
+	if len(password) > maxLen or len(password) < minLen:
+		return("Alter your word length values to get your specified password length.")
 	else:
 		return password
 
@@ -68,7 +131,6 @@ def numberSubstitution(password):
 			ch = ch.replace(ch, switch[ch])
 		newpass += ch
 	return newpass
-
 
 if __name__ == '__main__':
 	app.run(debug=True)
